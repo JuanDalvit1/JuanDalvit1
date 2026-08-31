@@ -151,16 +151,26 @@ def fetch_profile():
 
 
 def fetch_contributions():
-    """Contribution total for the last year. GraphQL only, so token-gated."""
+    """
+    Contribution total for the last year. GraphQL only, so token-gated.
+
+    The public calendar hides work done in private repos unless the profile's
+    "private contributions" setting is on - which is why the naive total reads
+    47 while the profile's own view reads 576. The API exposes the hidden part
+    separately as restrictedContributionsCount; summing the two counts the
+    year the way the owner sees it.
+    """
     if not TOKEN:
         return None
     query = ("query($login:String!){user(login:$login){contributionsCollection"
-             "{contributionCalendar{totalContributions}}}}")
+             "{restrictedContributionsCount "
+             "contributionCalendar{totalContributions}}}}")
     try:
         res = api("https://api.github.com/graphql",
                   {"query": query, "variables": {"login": USER}})
-        return (res["data"]["user"]["contributionsCollection"]
-                ["contributionCalendar"]["totalContributions"])
+        col = res["data"]["user"]["contributionsCollection"]
+        return (col["contributionCalendar"]["totalContributions"]
+                + col.get("restrictedContributionsCount", 0))
     except (urllib.error.URLError, KeyError, TypeError):
         return None
 
