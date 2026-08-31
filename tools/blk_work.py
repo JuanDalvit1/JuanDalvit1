@@ -8,13 +8,16 @@ the system's own repository (README, PROJECT.md, inventories); the repos are
 private, so the cards are how the work gets counted without exposing a line
 of it.
 
-The hero figures, and where they come from:
+The right column names the capability each system proves - the thing a
+reader hiring or partnering with a developer actually scans for. System
+trivia (container counts, policy counts) lives in the fact line where it
+belongs; the column sells the competency:
 
-    SSO           18  apps fronted        ISONLINE application catalog
-    FoccoAPI       0  writes allowed      SELECT-only invariant, PROJECT.md
-    platform-ops  92  containers mapped   inventory/runtime-containers.yaml
-    PMC           19  RLS policies        README (Seguranca e Permissoes)
-    SGI          B/G  deploy model        platform blue-green standard
+    SSO           SECURITY & IDENTITY     auth protocols, fail-closed design
+    FoccoAPI      LEGACY INTEGRATION      stable contracts over a 20y ERP
+    platform-ops  PLATFORM GOVERNANCE     SRE, auditability, change control
+    PMC           PRODUCT DELIVERY        spreadsheet to governed webapp
+    SGI           DATA PLATFORMS          KPIs the plant actually reads
 
 What is deliberately absent: hostnames, IPs, internal topology, client name.
 The client is described by profile in the section header, which is the
@@ -56,38 +59,38 @@ THEMES = {
              "chip": "#151515", "chip_edge": "#303030"},
 }
 
-# (slug, seed, index, name, tag, hero, hero_label, description, fact, chips)
+# (slug, seed, index, name, tag, capability_lines, description, fact, chips)
 SYSTEMS = [
     ("sso", 211, "01",
      "SSO / IDENTITY PLATFORM", "IN PRODUCTION",
-     "18", "APPS FRONTED",
+     ["SECURITY &", "IDENTITY"],
      "Central identity: OAuth2/OIDC, MFA, session governance and audit "
      "for the ecosystem.",
-     "One login fronting every production app - fail-closed authorization",
+     "One login fronting 18 production apps - fail-closed authorization",
      ["TypeScript", "Fastify", "Next.js", "Supabase", "PostgreSQL",
       "Docker", "NGINX"]),
 
     ("foccoapi", 223, "02",
      "FOCCOAPI / ERP DATA PLATFORM", "IN PRODUCTION",
-     "0", "WRITES ALLOWED",
+     ["LEGACY", "INTEGRATION"],
      "Read-only REST + MCP facade over the factory's Oracle ERP. Stable, "
      "versioned contracts.",
-     "Active/standby topology - immutable SHA deploys, automatic rollback",
+     "Zero writes by invariant - immutable SHA deploys, automatic rollback",
      ["TypeScript", "Fastify", "Oracle", "OpenAPI", "MCP", "GHCR",
       "GitHub Actions"]),
 
     ("platform-ops", 227, "03",
      "PLATFORM-OPS / CONTROL PLANE", "SOURCE OF TRUTH",
-     "92", "CONTAINERS MAPPED",
+     ["PLATFORM", "GOVERNANCE"],
      "The source of truth: sanitized inventory, ADRs, runbooks, evidence, "
      "change governance.",
-     "28 services, 28 domains, 3 hosts - read-only collectors, SHA-256 "
+     "92 containers, 28 services, 3 hosts - read-only collectors, SHA-256 "
      "evidence",
      ["Python", "YAML", "OpenSSH", "GitHub CLI", "Docker", "Ubuntu"]),
 
     ("pmc", 229, "04",
      "PMC / PROJECT PORTFOLIO", "IN PRODUCTION",
-     "19", "RLS POLICIES",
+     ["PRODUCT", "DELIVERY"],
      "Corporate project portfolio - scoring matrix, 5W2H plans and formal "
      "approval flow.",
      "Row-level security on every table - full audit trail - xlsx upsert "
@@ -96,7 +99,7 @@ SYSTEMS = [
 
     ("sgi", 233, "05",
      "SGI / INDUSTRIAL KPIs", "IN PRODUCTION",
-     "B/G", "DEPLOY MODEL",
+     ["DATA", "PLATFORMS"],
      "Executive dashboard for industrial KPIs - trends, targets and Excel "
      "ingestion.",
      "Behind the central SSO - turns spreadsheet reporting into living "
@@ -136,7 +139,7 @@ def hand_underline(rng, x0, x1, y, ink, passes=2):
 
 
 def build(system, theme):
-    slug, seed, index, name, tag, hero, hero_label, desc, fact, chips = system
+    slug, seed, index, name, tag, cap, desc, fact, chips = system
     for label, line in (("desc", desc), ("fact", fact)):
         if len(line) > LEFT_MAX:
             sys.exit("%s/%s is %d chars; %d is the ceiling - shorten it"
@@ -166,15 +169,19 @@ def build(system, theme):
                     0.95))
     out.append(text(LEFT + 1, 148, fact, 16, t["ink"], 700, 0.5, MONO, 0.95))
 
-    # right column: the hero figure - one number, set like it means it
+    # right column: the capability this system proves about its builder -
+    # the line a reader hiring a developer actually scans for
     out.append(text(NUM_X, 66, tag, 13, t["sub"], 700, 3, MONO, 0.8,
                     anchor="end"))
-    out.append(text(NUM_X, 152, hero, 84, t["ink"], 900, 0, FONT,
-                    anchor="end"))
-    hero_w = max(52, len(hero) * 58)
-    out += hand_underline(rng, NUM_X - hero_w, NUM_X, 166, t["ink"])
-    out.append(text(NUM_X, 190, hero_label, 13, t["sub"], 700, 3, MONO, 0.85,
-                    anchor="end"))
+    cap_y = 118
+    for line in cap:
+        out.append(text(NUM_X, cap_y, line, 31, t["ink"], 900, 2, FONT,
+                        anchor="end"))
+        cap_y += 38
+    hero_w = max(150, int(max(len(line) for line in cap) * 21.5))
+    out += hand_underline(rng, NUM_X - hero_w, NUM_X, cap_y - 20, t["ink"])
+    out.append(text(NUM_X, cap_y + 6, "CAPABILITY", 12, t["sub"], 700, 4,
+                    MONO, 0.8, anchor="end"))
 
     # bottom: the stack as chips, the same key as every other surface
     out.append('<path d="M%d 168H%d" stroke="%s" stroke-width="1.5"/>'
@@ -193,7 +200,7 @@ def build(system, theme):
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'
             % (W, th, W, th,
-               esc("%s - %s %s. %s" % (name, hero, hero_label.lower(), desc)),
+               esc("%s - %s. %s" % (name, " ".join(cap).title(), desc)),
                "".join(out)))
 
 
