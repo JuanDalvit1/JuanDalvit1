@@ -7,10 +7,14 @@ badge service. That is the whole reason this file exists: the public
 github-readme-stats instance answers 503 often enough that a profile built on
 it ships a broken image, and a broken image on a profile reads as neglect.
 
-Form follows the data's job. Four counts have no shape to compare, so they are
+Form follows the data's job. Counts have no shape to compare, so they are
 stat tiles, not a chart. The language split is parts-of-a-whole, so it is one
 stacked bar. Identity never rests on colour - the system is monochrome by
 definition, so every segment carries a written label.
+
+Stars and followers are deliberately not shown: real numbers, but they count
+fame, not work. The tiles count work - repositories, apps in production,
+containers in operation, contributions.
 
 Scope note: without a personal token this can only see what any visitor sees -
 public repos owned by the user. Work living in private repos or in an org with
@@ -65,6 +69,12 @@ THEMES = {
 }
 
 MAX_LANGS = 5
+
+# Platform facts, sourced from the org's own platform-ops inventory
+# (inventory/runtime-containers.yaml, services.yaml) and the ISONLINE
+# application catalog. Static by nature - update them when the platform grows.
+APPS_IN_PRODUCTION = 18
+CONTAINERS_CATALOGED = 92
 
 
 # --------------------------------------------------------------------------- #
@@ -211,8 +221,8 @@ def build(stats, theme):
 
     scope = "REPOSITORIES" if stats["full_scope"] else "PUBLIC REPOS"
     tiles = [(compact(stats["repos"]), scope),
-             (compact(stats["stars"]), "STARS EARNED"),
-             (compact(stats["followers"]), "FOLLOWERS")]
+             (compact(APPS_IN_PRODUCTION), "APPS IN PRODUCTION"),
+             (compact(CONTAINERS_CATALOGED), "CONTAINERS IN OPERATION")]
     if stats["contributions"] is not None:
         tiles.append((compact(stats["contributions"]), "CONTRIBUTIONS / 1Y"))
 
@@ -287,6 +297,16 @@ def main():
 
     out_dir = os.path.join(ROOT, "assets", "sections")
     os.makedirs(out_dir, exist_ok=True)
+
+    # Never let a public-scope run clobber a full-scope card: the committed
+    # numbers were produced with a personal token, and overwriting them with
+    # the public-only count would silently shrink 64 repositories back to 13.
+    existing = os.path.join(out_dir, "stats-light.svg")
+    if not stats["full_scope"] and os.path.exists(existing):
+        print("public scope + full-scope card already committed: keeping it. "
+              "Set METRICS_TOKEN to refresh with full scope.")
+        return
+
     for theme in THEMES:
         name = "stats-%s.svg" % theme
         markup = build(stats, theme)

@@ -36,8 +36,40 @@ than five clever ones that need a keeper.
 <br>
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-dark.svg">
+  <img alt="02 — Selected Work: industrial systems for one of Brazil's largest furniture manufacturers" src="assets/sections/work-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-sso-dark.svg">
+  <img alt="SSO / Identity Platform — central identity provider: OAuth2/OIDC, MFA, session governance and audit, fronting 18 production apps" src="assets/sections/work-sso-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-foccoapi-dark.svg">
+  <img alt="FoccoAPI / ERP Data Platform — read-only REST and MCP facade over the factory's Oracle ERP, immutable SHA deploys with automatic rollback" src="assets/sections/work-foccoapi-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-platform-ops-dark.svg">
+  <img alt="Platform-Ops / Control Plane — operational source of truth: 92 containers, 28 services and 28 domains cataloged across 3 hosts" src="assets/sections/work-platform-ops-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-pmc-dark.svg">
+  <img alt="PMC / Project Portfolio — corporate project portfolio with scoring matrix, 5W2H and formal approval flow, row-level security on every table" src="assets/sections/work-pmc-light.svg" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/sections/work-sgi-dark.svg">
+  <img alt="SGI / Industrial KPIs — executive dashboard for industrial and corporate indicators behind the central SSO" src="assets/sections/work-sgi-light.svg" width="100%">
+</picture>
+
+<br>
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/sections/stack-dark.svg">
-  <img alt="02 — Tech Stack" src="assets/sections/stack-light.svg" width="100%">
+  <img alt="03 — Tech Stack" src="assets/sections/stack-light.svg" width="100%">
 </picture>
 
 <picture>
@@ -49,7 +81,7 @@ than five clever ones that need a keeper.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/sections/signals-dark.svg">
-  <img alt="03 — GitHub Stats" src="assets/sections/signals-light.svg" width="100%">
+  <img alt="04 — GitHub Stats" src="assets/sections/signals-light.svg" width="100%">
 </picture>
 
 <picture>
@@ -61,7 +93,7 @@ than five clever ones that need a keeper.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/sections/serpent-dark.svg">
-  <img alt="04 — Contribution Graph" src="assets/sections/serpent-light.svg" width="100%">
+  <img alt="05 — Contribution Graph" src="assets/sections/serpent-light.svg" width="100%">
 </picture>
 
 <picture>
@@ -73,7 +105,7 @@ than five clever ones that need a keeper.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/sections/contact-dark.svg">
-  <img alt="05 — Get In Touch" src="assets/sections/contact-light.svg" width="100%">
+  <img alt="06 — Get In Touch" src="assets/sections/contact-light.svg" width="100%">
 </picture>
 
 - **LinkedIn** — [linkedin.com/in/juandalvit](https://www.linkedin.com/in/juandalvit/)

@@ -120,7 +120,7 @@ The committed assets are generated. Do not edit them by hand — edit the source
 drawings or the scripts and rebuild.
 
 ```bash
-python tools/blk_images.py && python tools/blk_sections.py && python tools/blk_stack.py && python tools/blk_stats.py
+python tools/blk_images.py && python tools/blk_sections.py && python tools/blk_stack.py && python tools/blk_work.py && python tools/blk_stats.py
 ```
 
 | Path | Role |
@@ -131,7 +131,8 @@ python tools/blk_images.py && python tools/blk_sections.py && python tools/blk_s
 | `tools/blk_images.py` | Derives the themed hero, closing mark and isolated crown |
 | `tools/blk_sections.py` | Renders the section headers (crown embedded as a data URI) |
 | `tools/blk_stack.py` | Renders the stack chip grid; icons inlined from Simple Icons |
-| `tools/blk_stats.py` | Renders the signals card from the GitHub API |
+| `tools/blk_stats.py` | Renders the signals card from the GitHub API; refuses to demote a full-scope card to public-only numbers |
+| `tools/blk_work.py` | Renders the selected-work cards - flagship systems described from their own repos, no internals exposed |
 | `tools/simple-icons.json` | Committed icon cache, so builds work offline |
 | `.github/workflows/snake.yml` | Redraws the snake onto `output` and the signals card onto `main`, every 12h |
 
