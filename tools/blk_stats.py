@@ -42,10 +42,10 @@ USER = sys.argv[1] if len(sys.argv) > 1 else "JuanDalvit1"
 TOKEN = (os.environ.get("METRICS_TOKEN", "").strip()
          or os.environ.get("GITHUB_TOKEN", "").strip())
 
-W, H = 1280, 322
+W, H = 1280, 312
 RADIUS = 24
-STROKE = 4
-EDGE_INSET = 8
+STROKE = 3
+EDGE_INSET = 6
 
 FONT = "'Arial Black','Helvetica Neue',Helvetica,Arial,sans-serif"
 MONO = "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace"

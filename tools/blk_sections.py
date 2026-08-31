@@ -44,8 +44,8 @@ MONO = "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace"
 
 W, H = 1280, 150
 RADIUS = 24          # ~16px once GitHub scales the card to column width
-STROKE = 4
-EDGE_INSET = 8       # room for the wobble to swing without clipping
+STROKE = 3
+EDGE_INSET = 6       # room for the wobble to swing without clipping
 CROWN_H = 46
 
 def card(theme, seed):

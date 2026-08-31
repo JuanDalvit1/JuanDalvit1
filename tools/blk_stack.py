@@ -80,8 +80,8 @@ STACK = [
 
 W = 1280
 RADIUS = 24
-STROKE = 4
-EDGE_INSET = 8
+STROKE = 3
+EDGE_INSET = 6
 
 PAD_X, PAD_TOP = 38, 34
 GUTTER = 124           # width of the row-label column

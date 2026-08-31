@@ -45,8 +45,8 @@ BORDER = {"light": "#1c1a17", "dark": "#cfc9c0"}
 # Every surface in the system is the same card: softly rounded, hand-drawn
 # border, content held inside it. Nothing floats loose on the page.
 RADIUS = 30          # ~17px once GitHub scales a 1500px banner to column width
-STROKE = 5
-EDGE_INSET = 9       # room for the wobble to swing without clipping
+STROKE = 4
+EDGE_INSET = 7       # room for the wobble to swing without clipping
 
 HERO = (1500, 500)
 ARISE = (1500, 500)
