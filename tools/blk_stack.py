@@ -79,6 +79,7 @@ STACK = [
 ]
 
 W = 1280
+MARGIN_BOTTOM = 22
 RADIUS = 24
 STROKE = 3
 EDGE_INSET = 6
@@ -239,9 +240,10 @@ def build(theme, icons, rows, height):
                 out.append(text(tx, top + CHIP_H / 2 + 5, name, LABEL_SIZE,
                                 t["ink"], 700, 0, MONO, 0.95))
 
+    th = height + MARGIN_BOTTOM
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'
-            % (W, height, W, height, esc(alt_text()), "".join(out)))
+            % (W, th, W, th, esc(alt_text()), "".join(out)))
 
 
 def alt_text():

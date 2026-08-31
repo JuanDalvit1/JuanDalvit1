@@ -47,6 +47,7 @@ TOKEN = (os.environ.get("METRICS_TOKEN", "").strip()
          or os.environ.get("GITHUB_TOKEN", "").strip())
 
 W, H = 1280, 312
+MARGIN_BOTTOM = 22
 RADIUS = 24
 STROKE = 3
 EDGE_INSET = 6
@@ -272,10 +273,11 @@ def build(stats, theme):
 
 
 def svg(body):
+    th = H + MARGIN_BOTTOM
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" '
             'aria-label="GitHub statistics for %s">%s</svg>'
-            % (W, H, W, H, esc(USER), "".join(body)))
+            % (W, th, W, th, esc(USER), "".join(body)))
 
 
 # --------------------------------------------------------------------------- #

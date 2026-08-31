@@ -35,6 +35,7 @@ import blk_style
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 W, H = 1280, 228
+MARGIN_BOTTOM = 22
 RADIUS = 24
 STROKE = 3
 EDGE_INSET = 6
@@ -188,9 +189,10 @@ def build(system, theme):
                         700, 0, MONO, 0.95, anchor="middle"))
         cx += cw + 9
 
+    th = H + MARGIN_BOTTOM
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'
-            % (W, H, W, H,
+            % (W, th, W, th,
                esc("%s - %s %s. %s" % (name, hero, hero_label.lower(), desc)),
                "".join(out)))
 

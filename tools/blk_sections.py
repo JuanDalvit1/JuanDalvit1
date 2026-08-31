@@ -43,6 +43,7 @@ FONT = "'Arial Black','Helvetica Neue',Helvetica,Arial,sans-serif"
 MONO = "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace"
 
 W, H = 1280, 150
+MARGIN_BOTTOM = 22
 RADIUS = 24          # ~16px once GitHub scales the card to column width
 STROKE = 3
 EDGE_INSET = 6       # room for the wobble to swing without clipping
@@ -115,14 +116,14 @@ def build(index, title, subtitle, theme, crown_data, crown_w, seed):
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" '
         'xmlns:xlink="http://www.w3.org/1999/xlink" '
-        'viewBox="0 0 %(w)d %(h)d" width="%(w)d" height="%(h)d" role="img" '
+        'viewBox="0 0 %(w)d %(th)d" width="%(w)d" height="%(th)d" role="img" '
         'aria-label="%(alt)s">'
         "%(card)s%(index)s%(title)s%(subtitle)s"
         '<image x="%(crown_x)d" y="%(crown_y)d" width="%(crown_w)d" '
         'height="%(crown_h)d" xlink:href="%(crown)s"/>'
         "</svg>"
     ) % {
-        "w": W, "h": H,
+        "w": W, "th": H + MARGIN_BOTTOM,
         "alt": "%s %s - %s" % (index, title, subtitle),
         "card": card(theme, seed),
         "index": text(48, 74, index, 32, t["sub"], 900, 2, MONO, 0.5),
