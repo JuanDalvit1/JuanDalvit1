@@ -20,7 +20,11 @@ Usage    python tools/blk_images.py
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
+
+import blk_style
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BLK = os.path.join(ROOT, "assets", "blk")
@@ -36,6 +40,13 @@ THEMES = {
 
 SUB = {"light": "#57534c", "dark": "#8d887f"}
 RULE = {"light": "#c8c3b9", "dark": "#2b2b2b"}
+BORDER = {"light": "#1c1a17", "dark": "#cfc9c0"}
+
+# Every surface in the system is the same card: softly rounded, hand-drawn
+# border, content held inside it. Nothing floats loose on the page.
+RADIUS = 30          # ~17px once GitHub scales a 1500px banner to column width
+STROKE = 5
+EDGE_INSET = 9       # room for the wobble to swing without clipping
 
 HERO = (1500, 500)
 ARISE = (1500, 500)
@@ -115,6 +126,34 @@ def fit_height(mask, height):
     return mask.resize((w, height), Image.LANCZOS)
 
 
+def card(img, border_hex, seed, radius=RADIUS, stroke=STROKE):
+    """
+    Cut the card out along a hand-drawn edge and trace that same edge in ink.
+
+    The wobbled outline is the silhouette, not a stroke laid over a geometric
+    rectangle - so the corners themselves are organic and the page background
+    shows through them instead of a matte painted in one theme's colour.
+    """
+    w = img.width - EDGE_INSET * 2
+    h = img.height - EDGE_INSET * 2
+    passes = blk_style.sketch(w, h, radius, seed, passes=3)
+    shifted = [[(x + EDGE_INSET, y + EDGE_INSET) for x, y in p]
+               for p in passes]
+
+    mask = Image.new("L", img.size, 0)
+    ImageDraw.Draw(mask).polygon(shifted[0], fill=255)
+
+    out = img.convert("RGBA")
+    out.putalpha(mask)
+
+    draw = ImageDraw.Draw(out)
+    for i, pts in enumerate(shifted):
+        alpha = int(255 * (0.98 - 0.26 * i))
+        draw.line(pts, fill=hexrgb(border_hex) + (alpha,),
+                  width=max(1, stroke - i), joint="curve")
+    return out
+
+
 def compose(size, paper_hex, layers):
     """Flatten themed layers onto the paper. Layers are (rgba, (x, y))."""
     canvas = Image.new("RGBA", size, hexrgb(paper_hex) + (255,))
@@ -138,9 +177,7 @@ def paper_grain(img, seed=11):
 
 def save(img, name):
     path = os.path.join(BLK, name)
-    img.convert("RGB" if name.startswith(("hero", "arise")) else "RGBA").save(
-        path, optimize=True
-    )
+    img.convert("RGBA").save(path, optimize=True)
     print("%-34s %5d x %-4d  %6.1f KB"
           % (name, img.width, img.height, os.path.getsize(path) / 1024))
 
@@ -152,8 +189,8 @@ def build_hero(bust_mask):
     its right. The contrast is the point - geometric, unmodulated type against
     a body that is nothing but scrawl.
     """
-    figure = fit_height(bust_mask, int(HERO[1] * 1.06))
-    x = 40
+    figure = fit_height(bust_mask, int(HERO[1] * 0.94))
+    x = 44
     y = HERO[1] - figure.height
     tx = 620
 
@@ -169,11 +206,10 @@ def build_hero(bust_mask):
         tracked(draw, (tx, 282), "ENGINEERING MANAGER", font(BLACK, 25), ink, 7)
         tracked(draw, (tx + 2, 328), "AI · SYSTEMS · AUTOMATION",
                 font(BOLD, 20), sub, 5)
-        tracked(draw, (tx + 2, 404), "BLK.ENTITY", font(MONOB, 16), ink, 3)
-        tracked(draw, (tx + 136, 404), "// sovereignty over the noise",
-                font(MONOB, 16), sub, 0)
+        tracked(draw, (tx + 2, 404), "FOUNDER @ FLEXIBASE-PROJECTS",
+                font(MONOB, 16), ink, 2)
 
-        save(canvas, "hero-%s.png" % theme)
+        save(card(canvas, BORDER[theme], seed=17), "hero-%s.png" % theme)
 
 
 def build_arise(arise_mask):
@@ -185,7 +221,13 @@ def build_arise(arise_mask):
     pos = ((ARISE[0] - w) // 2, (ARISE[1] - h) // 2)
     for theme, (paper, ink) in THEMES.items():
         canvas = compose(ARISE, paper, [(ink_layer(figure, ink), pos)])
-        save(paper_grain(canvas), "arise-%s.png" % theme)
+        canvas = paper_grain(canvas)
+
+        draw = ImageDraw.Draw(canvas)
+        tracked(draw, (58, ARISE[1] - 62), "I ARISE", font(BLACK, 30),
+                ink, 9)
+
+        save(card(canvas, BORDER[theme], seed=43), "arise-%s.png" % theme)
 
 
 def largest_blob(mask, threshold=40, work_width=360):
