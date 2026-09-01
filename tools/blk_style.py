@@ -140,11 +140,21 @@ def anim_css():
         "50%{transform:translateY(-5px)}}"
         "@keyframes blkB2{0%,100%{opacity:.72}50%{opacity:.30}}"
         "@keyframes blkB3{0%,100%{opacity:.18}50%{opacity:.50}}"
+        "@keyframes blkDust{0%,100%{transform:translate(0,0);opacity:.06}"
+        "25%{opacity:.38}50%{transform:translate(7px,-11px);opacity:.12}"
+        "75%{opacity:.30}}"
+        "@keyframes blkDraw{0%{stroke-dashoffset:1}30%{stroke-dashoffset:0}"
+        "78%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}"
+        "@keyframes blkCur{0%,49%{opacity:.9}50%,100%{opacity:0}}"
         ".bcrown{animation:blkBob 4.2s ease-in-out infinite}"
         ".bp2{animation:blkB2 5.6s ease-in-out infinite}"
         ".bp3{animation:blkB3 7.4s ease-in-out infinite}"
+        ".bdust{animation:blkDust 9s ease-in-out infinite}"
+        ".bdw{stroke-dasharray:1;animation:blkDraw 7s ease-in-out infinite}"
+        ".bcu{animation:blkCur 1.1s steps(1) infinite}"
         "@media (prefers-reduced-motion:reduce)"
-        "{.bcrown,.bp2,.bp3{animation:none}}"
+        "{.bcrown,.bp2,.bp3,.bdust,.bdw,.bcu{animation:none}"
+        ".bdw{stroke-dasharray:none}}"
         "</style>"
     )
 
@@ -166,6 +176,25 @@ def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6):
                    'stroke-linecap="round" opacity="%.2f"/>'
                    % (dress[i], svg_path(pts), border,
                       max(1, stroke - i), 0.98 - 0.26 * i))
+    return "".join(out)
+
+
+def dust_anim(rng, n, bbox, ink):
+    """
+    Living graphite: faint particles that drift and flicker. Each one gets
+    its own duration and a negative delay, so the field never moves in step
+    - dust does not march.
+    """
+    x0, y0, x1, y1 = bbox
+    out = []
+    for _ in range(n):
+        dur = rng.uniform(6.0, 13.0)
+        out.append('<circle class="bdust" cx="%.1f" cy="%.1f" r="%.2f" '
+                   'fill="%s" style="animation-duration:%.1fs;'
+                   'animation-delay:-%.1fs"/>'
+                   % (rng.uniform(x0, x1), rng.uniform(y0, y1),
+                      rng.uniform(0.8, 2.0), ink, dur,
+                      rng.uniform(0, dur)))
     return "".join(out)
 
 
@@ -207,6 +236,10 @@ def header(root, theme, tokens, index, title, subtitle, w,
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.9">'
          "%s</text>") % (mono, tokens["sub"], esc(subtitle)),
         crown_image(root, theme, w - 50, 30, crown_h),
+        # the terminal cursor, blinking at the end of the subtitle
+        ('<text class="bcu" x="%.1f" y="116" font-family="%s" '
+         'font-size="16" font-weight="700" fill="%s">_</text>'
+         % (120 + len(subtitle) * 8.9 + 5, mono, tokens["ink"])),
         ('<path d="M48 142H%d" stroke="%s" stroke-width="1.5"/>'
          % (w - 48, tokens.get("hair", tokens["sub"]))),
     ]

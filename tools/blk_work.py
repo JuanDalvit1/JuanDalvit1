@@ -111,16 +111,24 @@ def text(x, y, s, size, fill, weight=900, spacing=0, family=FONT,
 
 
 def hand_underline(rng, x0, x1, y, ink, passes=2):
-    """A short scrawled rule - the same hand that drew the border."""
+    """
+    A short scrawled rule - and a living one: the first pass draws itself,
+    holds, and is taken back, the hand going over the same line again.
+    Each underline gets its own phase so the page never moves in unison.
+    """
     out = []
     for p in range(passes):
         n = max(2, int((x1 - x0) / 14.0))
         pts = [(x0 + (x1 - x0) * i / n + rng.gauss(0, 1.2),
                 y + rng.gauss(0, 1.6) + p) for i in range(n + 1)]
         d = "M%.1f %.1f" % pts[0] + "".join("L%.1f %.1f" % q for q in pts[1:])
-        out.append('<path d="%s" fill="none" stroke="%s" stroke-width="%.1f" '
-                   'stroke-linecap="round" opacity="%.2f"/>'
-                   % (d, ink, 2.4 - p * 0.8, 0.9 - p * 0.35))
+        anim = (' class="bdw" pathLength="1" '
+                'style="animation-delay:-%.1fs"' % rng.uniform(0, 7)
+                if p == 0 else "")
+        out.append('<path%s d="%s" fill="none" stroke="%s" '
+                   'stroke-width="%.1f" stroke-linecap="round" '
+                   'opacity="%.2f"/>'
+                   % (anim, d, ink, 2.4 - p * 0.8, 0.9 - p * 0.35))
     return out
 
 
@@ -180,6 +188,8 @@ def build(theme):
                          "industrial systems for one of brazil's largest "
                          "furniture manufacturers", W, FONT, MONO),
     ]
+    out.append(blk_style.dust_anim(rng, 26, (60, 40, W - 60, card_h - 30),
+                                   t["sub"]))
     for i, system in enumerate(SYSTEMS):
         b = HEADER_H + i * STRIDE
         if i:

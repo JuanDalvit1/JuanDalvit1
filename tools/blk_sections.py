@@ -13,6 +13,7 @@ Outputs  assets/sections/<slug>-{light,dark}.svg
 """
 
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -65,6 +66,11 @@ def build(index, title, subtitle, theme, seed):
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.85">'
          "%s</text>") % (MONO, t["sub"], esc(subtitle)),
         blk_style.crown_image(ROOT, theme, W - 50, 52, 46),
+        ('<text class="bcu" x="%.1f" y="114" font-family="%s" '
+         'font-size="16" font-weight="700" fill="%s">_</text>'
+         % (120 + len(subtitle) * 8.9 + 5, MONO, t["ink"])),
+        blk_style.dust_anim(random.Random(seed), 10,
+                            (60, 30, W - 200, H - 24), t["sub"]),
     ]
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'

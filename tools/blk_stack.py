@@ -20,6 +20,7 @@ Outputs  assets/sections/tech-stack-{light,dark}.svg
 
 import json
 import os
+import random
 import re
 import sys
 import urllib.error
@@ -208,6 +209,8 @@ def build(theme, icons, rows, height):
     out.append(blk_style.header(ROOT, theme, t, "03", "TECH STACK",
                                 "languages, ai, backend, data, frontend, "
                                 "infrastructure", W, FONT, MONO))
+    out.append(blk_style.dust_anim(random.Random(83), 20,
+                                   (60, 40, W - 60, height - 30), t["sub"]))
 
     for label, y, lines in rows:
         out.append(text(GUTTER - 20, y + CHIP_H / 2 + 5, label, 13, t["sub"],

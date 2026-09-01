@@ -103,9 +103,13 @@ def tick(rng, x, y, ink):
         pts = [(x + i * 7 + rng.gauss(0, 1.0),
                 y + rng.gauss(0, 1.3) + p * 0.8) for i in range(4)]
         d = "M%.1f %.1f" % pts[0] + "".join("L%.1f %.1f" % q for q in pts[1:])
-        out.append('<path d="%s" fill="none" stroke="%s" stroke-width="%.1f" '
-                   'stroke-linecap="round" opacity="%.2f"/>'
-                   % (d, ink, 2.2 - p * 0.7, 0.9 - p * 0.3))
+        anim = (' class="bdw" pathLength="1" '
+                'style="animation-delay:-%.1fs"' % rng.uniform(0, 7)
+                if p == 0 else "")
+        out.append('<path%s d="%s" fill="none" stroke="%s" '
+                   'stroke-width="%.1f" stroke-linecap="round" '
+                   'opacity="%.2f"/>'
+                   % (anim, d, ink, 2.2 - p * 0.7, 0.9 - p * 0.3))
     return out
 
 
@@ -165,6 +169,8 @@ def build(theme):
                          "ai systems, automation, and the platforms that "
                          "keep them running", W, FONT, MONO),
     ]
+    out.append(blk_style.dust_anim(rng, 18, (60, 40, W - 60, card_h - 30),
+                                   t["sub"]))
     out += body
 
     total_h = card_h + MARGIN_BOTTOM
