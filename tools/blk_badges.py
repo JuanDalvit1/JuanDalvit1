@@ -7,7 +7,7 @@ whole cards wrapped in <a> tags - the entire badge is the link. Three keys,
 one row, same hand as everything else.
 
 Usage    python tools/blk_badges.py
-Outputs  assets/sections/badge-{linkedin,email,docs}-{light,dark}.svg
+Outputs  assets/sections/badge-{linkedin,email,site}-{light,dark}.svg
 """
 
 import os
@@ -39,7 +39,7 @@ THEMES = {
 BADGES = [
     ("linkedin", 301, "LINKEDIN", "/in/juandalvit"),
     ("email", 307, "EMAIL", "eng3.flexibase@gmail.com"),
-    ("docs", 311, "BLK.SYSTEM", "how this page is drawn"),
+    ("site", 311, "SITE", "dalvit.dev"),
 ]
 
 
