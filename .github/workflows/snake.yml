@@ -1,13 +1,9 @@
 name: BLK · the serpent
 
-# Keeps the two live surfaces of the profile current:
-#   * the contribution graph rendered as a snake devouring every commit,
-#     in the BLK palette, published to the `output` branch
-#   * the signals card, redrawn from the GitHub API onto `main`
-#
-# Both are committed artefacts. Nothing on the README is fetched from a
-# third-party badge service at read time, so nothing on it can break because
-# someone else's server had a bad day.
+# Renders the contribution graph as a snake eating every commit, in the
+# BLK palette, published to the `output` branch. The snake is only ever as
+# dense as the public contribution calendar - enabling "private
+# contributions" in the profile settings is what fills it in.
 
 on:
   schedule:
@@ -45,36 +41,3 @@ jobs:
           build_dir: dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  signals:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Redraw the signals card
-        run: python tools/blk_stats.py "${{ github.repository_owner }}"
-        env:
-          # GITHUB_TOKEN is scoped to this repo: it unlocks the contribution
-          # count (GraphQL will not serve it anonymously) but cannot see
-          # private or org repositories. Add a METRICS_TOKEN secret - a personal
-          # access token with `repo` + `read:org` - to count those too.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
-
-      - name: Commit if the numbers moved
-        run: |
-          if git diff --quiet -- assets/sections; then
-            echo "signals unchanged"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/sections/stats-light.svg assets/sections/stats-dark.svg
-          # [skip ci] so this push does not re-trigger the workflow
-          git commit -m "chore(signals): refresh stats card [skip ci]"
-          git push

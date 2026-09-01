@@ -59,18 +59,9 @@ def build(slug, seed, title, detail, theme):
     t = THEMES[theme]
     out = []
 
-    passes = blk_style.sketch(W - EDGE_INSET * 2, H - EDGE_INSET * 2,
-                              RADIUS, seed, passes=3, amplitude=2.6)
-    shifted = [[(x + EDGE_INSET, y + EDGE_INSET) for x, y in p]
-               for p in passes]
-    out.append('<path d="%s" fill="%s"/>'
-               % (blk_style.svg_path(shifted[0]), t["paper"]))
-    for i, pts in enumerate(shifted):
-        out.append('<path d="%s" fill="none" stroke="%s" stroke-width="%d" '
-                   'stroke-linejoin="round" stroke-linecap="round" '
-                   'opacity="%.2f"/>'
-                   % (blk_style.svg_path(pts), t["border"],
-                      max(1, STROKE - i), 0.98 - 0.26 * i))
+    out.append(blk_style.anim_css())
+    out.append(blk_style.draw_card(W, H, RADIUS, seed, t["paper"],
+                                   t["border"]))
 
     out.append(text(36, 56, title, 26, t["ink"], 900, 3))
     out.append(text(37, 88, detail, 14, t["sub"], 400, 0.5, MONO, 0.9))

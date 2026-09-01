@@ -49,8 +49,23 @@ coverage** and re-inked per theme — nanquim on paper, or chalk on charcoal.
 
 ## 3. The card
 
-Every surface on the profile is the same object — the banner, each section
-header, the stack grid, the signals card. Nothing floats loose on the page.
+Every surface on the profile is the same object, and every section is ONE
+card: its header (index, flat title, mono subtitle, floating crown) sits at
+the top of the card that holds its content. Nothing floats loose on the page
+— not the manifesto, not the contact links, not a caption.
+
+Two sections keep a standalone header card because their content cannot live
+inside our SVG: the snake (an external image rebuilt by CI) and the contact
+badges (each one must be its own anchor to be clickable).
+
+### The living layer
+
+Cards are animated from inside the SVG — CSS keyframes survive GitHub's
+image proxy. Two motions, both from the concept, neither decorative: the
+crown bobs (it never lands, so it cannot hold still) and the fainter border
+passes breathe (a sketch being gone over again). No glow, no colour shift;
+honours prefers-reduced-motion. The recipe lives once, in
+[`tools/blk_style.py`](../tools/blk_style.py) (`anim_css`, `draw_card`).
 
 ```
 .------------------------------------------------------------------.
@@ -120,7 +135,7 @@ The committed assets are generated. Do not edit them by hand — edit the source
 drawings or the scripts and rebuild.
 
 ```bash
-python tools/blk_images.py && python tools/blk_sections.py && python tools/blk_stack.py && python tools/blk_work.py && python tools/blk_stats.py
+python tools/blk_images.py && python tools/blk_manifesto.py && python tools/blk_work.py && python tools/blk_stack.py && python tools/blk_sections.py && python tools/blk_badges.py
 ```
 
 | Path | Role |
@@ -129,7 +144,7 @@ python tools/blk_images.py && python tools/blk_sections.py && python tools/blk_s
 | `assets/blk/src-arise.png` | Source drawing — the figure reaching for the crown |
 | `tools/blk_style.py` | The shared hand-drawn edge, used by every card in both formats |
 | `tools/blk_images.py` | Derives the themed hero, closing mark and isolated crown |
-| `tools/blk_sections.py` | Renders the section headers (crown embedded as a data URI) |
+| `tools/blk_sections.py` | Standalone headers for the snake and contact sections |
 | `tools/blk_stack.py` | Renders the stack chip grid; icons inlined from Simple Icons |
 | `tools/blk_stats.py` | Renders the signals card from the GitHub API; refuses to demote a full-scope card to public-only numbers |
 | `tools/blk_work.py` | Renders the selected-work cards - flagship systems described from their own repos, no internals exposed |

@@ -116,3 +116,98 @@ def svg_path(pts, precision=1):
     head = "M" + fmt % pts[0][0] + " " + fmt % pts[0][1]
     body = "".join("L" + fmt % x + " " + fmt % y for x, y in pts[1:])
     return head + body + "Z"
+
+# --------------------------------------------------------------------------- #
+# shared card chrome
+# --------------------------------------------------------------------------- #
+
+def anim_css():
+    """
+    The living layer. Two motions, both from the concept, neither decorative:
+
+      * the crown bobs - it never lands, so it cannot hold still;
+      * the fainter border passes breathe - a sketch being gone over again,
+        the hand that cannot stop redrawing the same line.
+
+    CSS animation inside the SVG: it runs even when the file is embedded
+    through an <img> tag, which is how GitHub serves README images. No
+    glow, no color shift - only position and the opacity of graphite.
+    Honors prefers-reduced-motion.
+    """
+    return (
+        "<style>"
+        "@keyframes blkBob{0%,100%{transform:translateY(0)}"
+        "50%{transform:translateY(-5px)}}"
+        "@keyframes blkB2{0%,100%{opacity:.72}50%{opacity:.30}}"
+        "@keyframes blkB3{0%,100%{opacity:.18}50%{opacity:.50}}"
+        ".bcrown{animation:blkBob 4.2s ease-in-out infinite}"
+        ".bp2{animation:blkB2 5.6s ease-in-out infinite}"
+        ".bp3{animation:blkB3 7.4s ease-in-out infinite}"
+        "@media (prefers-reduced-motion:reduce)"
+        "{.bcrown,.bp2,.bp3{animation:none}}"
+        "</style>"
+    )
+
+
+def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6):
+    """
+    The card itself: organic silhouette filled with paper, traced three
+    times. Passes two and three carry the animation classes so every card
+    breathes the same way without any generator repeating the recipe.
+    """
+    passes = sketch(w - inset * 2, h - inset * 2, radius, seed, passes=3)
+    shifted = [[(x + inset, y + inset) for x, y in p] for p in passes]
+
+    out = ['<path d="%s" fill="%s"/>' % (svg_path(shifted[0]), paper)]
+    dress = ["", ' class="bp2"', ' class="bp3"']
+    for i, pts in enumerate(shifted):
+        out.append('<path%s d="%s" fill="none" stroke="%s" '
+                   'stroke-width="%d" stroke-linejoin="round" '
+                   'stroke-linecap="round" opacity="%.2f"/>'
+                   % (dress[i], svg_path(pts), border,
+                      max(1, stroke - i), 0.98 - 0.26 * i))
+    return "".join(out)
+
+
+def crown_image(root, theme, right_x, y, height, cls="bcrown"):
+    """The drawn crown as a floating <image>, anchored by its right edge."""
+    import base64
+    import os
+
+    from PIL import Image
+
+    path = os.path.join(root, "assets", "blk", "crown-%s.png" % theme)
+    with Image.open(path) as im:
+        width = round(im.width * height / im.height)
+    with open(path, "rb") as fh:
+        data = base64.b64encode(fh.read()).decode("ascii")
+    return ('<image class="%s" x="%d" y="%d" width="%d" height="%d" '
+            'href="data:image/png;base64,%s"/>'
+            % (cls, right_x - width, y, width, height, data))
+
+
+def header(root, theme, tokens, index, title, subtitle, w,
+           font, mono, crown_h=46):
+    """
+    The section header, now the top of its own content card rather than a
+    card of its own: index, flat title, mono subtitle, floating crown.
+    """
+    def esc(s):
+        return (s.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;"))
+
+    out = [
+        ('<text x="48" y="78" font-family="%s" font-size="32" '
+         'font-weight="900" letter-spacing="2" fill="%s" opacity="0.45">'
+         "%s</text>") % (mono, tokens["sub"], esc(index)),
+        ('<text x="118" y="80" font-family="%s" font-size="38" '
+         'font-weight="900" letter-spacing="5" fill="%s">%s</text>')
+        % (font, tokens["ink"], esc(title)),
+        ('<text x="120" y="116" font-family="%s" font-size="16" '
+         'font-weight="400" letter-spacing="1" fill="%s" opacity="0.9">'
+         "%s</text>") % (mono, tokens["sub"], esc(subtitle)),
+        crown_image(root, theme, w - 50, 30, crown_h),
+        ('<path d="M48 142H%d" stroke="%s" stroke-width="1.5"/>'
+         % (w - 48, tokens.get("hair", tokens["sub"]))),
+    ]
+    return "".join(out)

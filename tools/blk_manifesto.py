@@ -2,12 +2,12 @@
 """
 BLK.SYSTEM - the manifesto body.
 
+The whole 01 section as one card: header on top, the manifesto beneath it.
 The one place the profile speaks in full sentences - and even here, nothing
-floats loose on the page: the whole statement lives inside the same
-hand-drawn card as every other surface. Height follows the text.
+floats loose on the page. Height follows the text.
 
 Usage    python tools/blk_manifesto.py
-Outputs  assets/sections/manifesto-body-{light,dark}.svg
+Outputs  assets/sections/what-i-build-{light,dark}.svg
 """
 
 import os
@@ -121,7 +121,7 @@ def build(theme):
     for lead, rest in PRINCIPLES:
         blocks.append(("principle", wrap("%s - %s" % (lead, rest), WRAP - 4)))
 
-    y = 62.0
+    y = 186.0
     body = []
     for kind, lines in blocks:
         if kind == "hair":
@@ -157,24 +157,19 @@ def build(theme):
 
     card_h = int(y + 18)
 
-    out = []
-    passes = blk_style.sketch(W - EDGE_INSET * 2, card_h - EDGE_INSET * 2,
-                              RADIUS, seed=131, passes=3)
-    shifted = [[(x + EDGE_INSET, yy + EDGE_INSET) for x, yy in p]
-               for p in passes]
-    out.append('<path d="%s" fill="%s"/>'
-               % (blk_style.svg_path(shifted[0]), t["paper"]))
-    for i, pts in enumerate(shifted):
-        out.append('<path d="%s" fill="none" stroke="%s" stroke-width="%d" '
-                   'stroke-linejoin="round" stroke-linecap="round" '
-                   'opacity="%.2f"/>'
-                   % (blk_style.svg_path(pts), t["border"],
-                      max(1, STROKE - i), 0.98 - 0.26 * i))
+    out = [
+        blk_style.anim_css(),
+        blk_style.draw_card(W, card_h, RADIUS, 131, t["paper"],
+                            t["border"]),
+        blk_style.header(ROOT, theme, t, "01", "WHAT I BUILD",
+                         "ai systems, automation, and the platforms that "
+                         "keep them running", W, FONT, MONO),
+    ]
     out += body
 
     total_h = card_h + MARGIN_BOTTOM
-    alt = " ".join(INTRO) + " " + " ".join(
-        "%s: %s" % p for p in PRINCIPLES)
+    alt = ("01 What I Build. " + " ".join(INTRO) + " "
+           + " ".join("%s: %s" % p for p in PRINCIPLES))
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'
             % (W, total_h, W, total_h, esc(alt), "".join(out)))
@@ -185,7 +180,7 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     for theme in THEMES:
         markup = build(theme)
-        name = "manifesto-body-%s.svg" % theme
+        name = "what-i-build-%s.svg" % theme
         with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
             fh.write(markup)
         print("assets/sections/%-28s %6.1f KB" % (name, len(markup) / 1024))

@@ -15,7 +15,7 @@ with a broken image the first time that service has a bad day.
 Edit STACK below to change what is shown - it is the single source of truth.
 
 Usage    python tools/blk_stack.py [--refresh]
-Outputs  assets/sections/stack-grid-{light,dark}.svg
+Outputs  assets/sections/tech-stack-{light,dark}.svg
 """
 
 import json
@@ -84,7 +84,7 @@ RADIUS = 24
 STROKE = 3
 EDGE_INSET = 6
 
-PAD_X, PAD_TOP = 38, 34
+PAD_X, PAD_TOP = 38, 178
 GUTTER = 124           # width of the row-label column
 CHIP_H = 33
 CHIP_PAD = 10
@@ -99,9 +99,11 @@ MONO = "ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace"
 
 THEMES = {
     "light": {"paper": "#f4f2ee", "ink": "#101010", "sub": "#57534c",
-              "border": "#1c1a17", "chip": "#eae7e0", "chip_edge": "#d5cfc3"},
+              "border": "#1c1a17", "hair": "#e2ddd2",
+              "chip": "#eae7e0", "chip_edge": "#d5cfc3"},
     "dark": {"paper": "#0a0a0a", "ink": "#ece8e0", "sub": "#8d887f",
-             "border": "#cfc9c0", "chip": "#151515", "chip_edge": "#303030"},
+             "border": "#cfc9c0", "hair": "#242424",
+             "chip": "#151515", "chip_edge": "#303030"},
 }
 
 
@@ -193,25 +195,19 @@ def layout():
 
         rows.append((label, y, lines))
         y += len(lines) * CHIP_H + (len(lines) - 1) * 6 + ROW_GAP
-    return rows, int(y - ROW_GAP + PAD_TOP)
+    return rows, int(y - ROW_GAP + 34)
 
 
 def build(theme, icons, rows, height):
     t = THEMES[theme]
     out = []
 
-    passes = blk_style.sketch(W - EDGE_INSET * 2, height - EDGE_INSET * 2,
-                              RADIUS, seed=59, passes=3)
-    shifted = [[(x + EDGE_INSET, y + EDGE_INSET) for x, y in p]
-               for p in passes]
-    out.append('<path d="%s" fill="%s"/>'
-               % (blk_style.svg_path(shifted[0]), t["paper"]))
-    for i, pts in enumerate(shifted):
-        out.append('<path d="%s" fill="none" stroke="%s" stroke-width="%d" '
-                   'stroke-linejoin="round" stroke-linecap="round" '
-                   'opacity="%.2f"/>'
-                   % (blk_style.svg_path(pts), t["border"],
-                      max(1, STROKE - i), 0.98 - 0.26 * i))
+    out.append(blk_style.anim_css())
+    out.append(blk_style.draw_card(W, height, RADIUS, 59, t["paper"],
+                                   t["border"]))
+    out.append(blk_style.header(ROOT, theme, t, "03", "TECH STACK",
+                                "languages, ai, backend, data, frontend, "
+                                "infrastructure", W, FONT, MONO))
 
     for label, y, lines in rows:
         out.append(text(GUTTER - 20, y + CHIP_H / 2 + 5, label, 13, t["sub"],
@@ -247,7 +243,7 @@ def build(theme, icons, rows, height):
 
 
 def alt_text():
-    return "Stack: " + "; ".join(
+    return "03 Tech Stack: " + "; ".join(
         "%s - %s" % (label, ", ".join(n for n, _s in items))
         for label, items in STACK)
 
@@ -260,7 +256,7 @@ def main():
     out_dir = os.path.join(ROOT, "assets", "sections")
     os.makedirs(out_dir, exist_ok=True)
     for theme in THEMES:
-        name = "stack-grid-%s.svg" % theme
+        name = "tech-stack-%s.svg" % theme
         markup = build(theme, icons, rows, height)
         with open(os.path.join(out_dir, name), "w", encoding="utf-8") as fh:
             fh.write(markup)
