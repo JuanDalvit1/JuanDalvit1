@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/blk/hero-dark.svg">
-  <img alt="Juan Dalvit — Engineering Manager · AI, Systems & Automation" src="assets/blk/hero-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/blk/hero-dark.png">
+  <img alt="Juan Dalvit — Engineering Manager · AI, Systems & Automation" src="assets/blk/hero-light.png" width="100%">
 </picture>
 
 <picture>

@@ -13,7 +13,6 @@ Outputs  assets/sections/<slug>-{light,dark}.svg
 """
 
 import os
-import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -59,18 +58,13 @@ def build(index, title, subtitle, theme, seed):
         ('<text x="48" y="74" font-family="%s" font-size="32" '
          'font-weight="900" letter-spacing="2" fill="%s" opacity="0.45">'
          "%s</text>") % (MONO, t["sub"], esc(index)),
-        ('<text x="118" y="76" font-family="%s" font-size="38" '
-         'font-weight="900" letter-spacing="5" fill="%s">%s</text>')
-        % (FONT, t["ink"], esc(title)),
+        ('<text class="bboil" x="118" y="76" font-family="%s" '
+         'font-size="38" font-weight="900" letter-spacing="5" '
+         'fill="%s">%s</text>') % (FONT, t["ink"], esc(title)),
         ('<text x="120" y="114" font-family="%s" font-size="16" '
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.85">'
          "%s</text>") % (MONO, t["sub"], esc(subtitle)),
         blk_style.crown_image(ROOT, theme, W - 50, 52, 46),
-        ('<text class="bcu" x="%.1f" y="114" font-family="%s" '
-         'font-size="16" font-weight="700" fill="%s">_</text>'
-         % (120 + len(subtitle) * 8.9 + 5, MONO, t["ink"])),
-        blk_style.dust_anim(random.Random(seed), 10,
-                            (60, 30, W - 200, H - 24), t["sub"]),
     ]
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '
             'width="%d" height="%d" role="img" aria-label="%s">%s</svg>'

@@ -63,11 +63,11 @@ def build(slug, seed, title, detail, theme):
     out.append(blk_style.draw_card(W, H, RADIUS, seed, t["paper"],
                                    t["border"]))
 
-    out.append(text(36, 56, title, 26, t["ink"], 900, 3))
+    title_t = text(36, 56, title, 26, t["ink"], 900, 3)
+    out.append(title_t.replace('<text ', '<text class="bboil" '
+                               'style="animation-delay:-%.2fs" '
+                               % ((seed % 9) / 10.0), 1))
     out.append(text(37, 88, detail, 14, t["sub"], 400, 0.5, MONO, 0.9))
-    out.append('<text class="bcu" x="%.1f" y="88" font-family="%s" '
-               'font-size="14" font-weight="700" fill="%s">_</text>'
-               % (37 + len(detail) * 7.9 + 4, MONO, t["ink"]))
 
     total_h = H + MARGIN_BOTTOM
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" '

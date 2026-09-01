@@ -123,59 +123,54 @@ def svg_path(pts, precision=1):
 
 def anim_css():
     """
-    The living layer. Two motions, both from the concept, neither decorative:
+    The living layer, built on one idea from hand-drawn animation: the
+    LINE BOIL. In traditional animation every frame is redrawn by hand, so
+    a "still" line quivers. Here the border keeps three sketch passes and
+    shows them one at a time, ~3 frames a second - the card is being
+    redrawn forever. The titles boil too, in sub-pixel steps, like
+    lettering traced frame by frame. And the crown bobs: it never lands,
+    so it cannot hold still.
 
-      * the crown bobs - it never lands, so it cannot hold still;
-      * the fainter border passes breathe - a sketch being gone over again,
-        the hand that cannot stop redrawing the same line.
-
-    CSS animation inside the SVG: it runs even when the file is embedded
-    through an <img> tag, which is how GitHub serves README images. No
-    glow, no color shift - only position and the opacity of graphite.
-    Honors prefers-reduced-motion.
+    All CSS inside the SVG - it survives GitHub's image proxy. Matte and
+    monochrome; prefers-reduced-motion freezes everything (the border
+    falls back to its first, cleanest pass).
     """
     return (
         "<style>"
         "@keyframes blkBob{0%,100%{transform:translateY(0)}"
         "50%{transform:translateY(-5px)}}"
-        "@keyframes blkB2{0%,100%{opacity:.72}50%{opacity:.30}}"
-        "@keyframes blkB3{0%,100%{opacity:.18}50%{opacity:.50}}"
-        "@keyframes blkDust{0%,100%{transform:translate(0,0);opacity:.06}"
-        "25%{opacity:.38}50%{transform:translate(7px,-11px);opacity:.12}"
-        "75%{opacity:.30}}"
-        "@keyframes blkDraw{0%{stroke-dashoffset:1}30%{stroke-dashoffset:0}"
-        "78%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}"
-        "@keyframes blkCur{0%,49%{opacity:.9}50%,100%{opacity:0}}"
+        "@keyframes blkFrame{0%,32.9%{opacity:.95}33%,100%{opacity:0}}"
+        "@keyframes blkBoil{0%,100%{transform:translate(0,0) rotate(0)}"
+        "33%{transform:translate(1.4px,-1.1px) rotate(.14deg)}"
+        "66%{transform:translate(-1.1px,.9px) rotate(-.12deg)}}"
         ".bcrown{animation:blkBob 4.2s ease-in-out infinite}"
-        ".bp2{animation:blkB2 5.6s ease-in-out infinite}"
-        ".bp3{animation:blkB3 7.4s ease-in-out infinite}"
-        ".bdust{animation:blkDust 9s ease-in-out infinite}"
-        ".bdw{stroke-dasharray:1;animation:blkDraw 7s ease-in-out infinite}"
-        ".bcu{animation:blkCur 1.1s steps(1) infinite}"
+        ".bf{animation:blkFrame 1.05s steps(1,end) infinite}"
+        ".bboil{transform-box:fill-box;transform-origin:center;"
+        "animation:blkBoil .9s steps(1,end) infinite}"
         "@media (prefers-reduced-motion:reduce)"
-        "{.bcrown,.bp2,.bp3,.bdust,.bdw,.bcu{animation:none}"
-        ".bdw{stroke-dasharray:none}}"
+        "{.bcrown,.bf,.bboil{animation:none}}"
         "</style>"
     )
 
 
 def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6):
     """
-    The card itself: organic silhouette filled with paper, traced three
-    times. Passes two and three carry the animation classes so every card
-    breathes the same way without any generator repeating the recipe.
+    The card: organic silhouette filled with paper, and a border that
+    boils. The three sketch passes are three FRAMES of the same line,
+    equal weight, shown one at a time on staggered delays. Reduced motion
+    leaves only the first frame visible (the others rest at opacity 0).
     """
     passes = sketch(w - inset * 2, h - inset * 2, radius, seed, passes=3)
     shifted = [[(x + inset, y + inset) for x, y in p] for p in passes]
 
     out = ['<path d="%s" fill="%s"/>' % (svg_path(shifted[0]), paper)]
-    dress = ["", ' class="bp2"', ' class="bp3"']
     for i, pts in enumerate(shifted):
-        out.append('<path%s d="%s" fill="none" stroke="%s" '
-                   'stroke-width="%d" stroke-linejoin="round" '
-                   'stroke-linecap="round" opacity="%.2f"/>'
-                   % (dress[i], svg_path(pts), border,
-                      max(1, stroke - i), 0.98 - 0.26 * i))
+        out.append('<path class="bf" style="animation-delay:%.2fs" '
+                   'd="%s" fill="none" stroke="%s" stroke-width="%.1f" '
+                   'stroke-linejoin="round" stroke-linecap="round" '
+                   'opacity="%s"/>'
+                   % (-0.35 * (2 - i) if i else 0.0, svg_path(pts), border,
+                      stroke * 0.85, ".95" if i == 0 else "0"))
     return "".join(out)
 
 
@@ -229,17 +224,13 @@ def header(root, theme, tokens, index, title, subtitle, w,
         ('<text x="48" y="78" font-family="%s" font-size="32" '
          'font-weight="900" letter-spacing="2" fill="%s" opacity="0.45">'
          "%s</text>") % (mono, tokens["sub"], esc(index)),
-        ('<text x="118" y="80" font-family="%s" font-size="38" '
-         'font-weight="900" letter-spacing="5" fill="%s">%s</text>')
-        % (font, tokens["ink"], esc(title)),
+        ('<text class="bboil" x="118" y="80" font-family="%s" '
+         'font-size="38" font-weight="900" letter-spacing="5" '
+         'fill="%s">%s</text>') % (font, tokens["ink"], esc(title)),
         ('<text x="120" y="116" font-family="%s" font-size="16" '
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.9">'
          "%s</text>") % (mono, tokens["sub"], esc(subtitle)),
         crown_image(root, theme, w - 50, 30, crown_h),
-        # the terminal cursor, blinking at the end of the subtitle
-        ('<text class="bcu" x="%.1f" y="116" font-family="%s" '
-         'font-size="16" font-weight="700" fill="%s">_</text>'
-         % (120 + len(subtitle) * 8.9 + 5, mono, tokens["ink"])),
         ('<path d="M48 142H%d" stroke="%s" stroke-width="1.5"/>'
          % (w - 48, tokens.get("hair", tokens["sub"]))),
     ]
