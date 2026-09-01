@@ -123,55 +123,94 @@ def svg_path(pts, precision=1):
 
 def anim_css():
     """
-    The living layer, built on one idea from hand-drawn animation: the
-    LINE BOIL. In traditional animation every frame is redrawn by hand, so
-    a "still" line quivers. Here the border keeps three sketch passes and
-    shows them one at a time, ~3 frames a second - the card is being
-    redrawn forever. The titles boil too, in sub-pixel steps, like
-    lettering traced frame by frame. And the crown bobs: it never lands,
-    so it cannot hold still.
+    The living layer, two behaviours:
 
-    All CSS inside the SVG - it survives GitHub's image proxy. Matte and
-    monochrome; prefers-reduced-motion freezes everything (the border
-    falls back to its first, cleanest pass).
+      * the border UNDULATES - a continuous SMIL morph between the three
+        sketch passes of the same line, slow and eased, so the edge moves
+        the way something organic moves instead of snapping frames;
+      * the titles GLITCH - long stillness, then a fraction of a second of
+        print misregistration: two ink ghosts split off and snap back.
+        Monochrome glitch, like a press that slipped, never an RGB effect.
+
+    Plus the crown bob. All of it survives GitHub's image proxy (CSS and
+    SMIL both run inside <img>), and prefers-reduced-motion stills the
+    type and hides the ghosts. The SMIL morph does not consult the media
+    query, so reduced-motion readers keep only the slow border drift -
+    the gentlest motion on the page.
     """
     return (
         "<style>"
         "@keyframes blkBob{0%,100%{transform:translateY(0)}"
         "50%{transform:translateY(-5px)}}"
-        "@keyframes blkFrame{0%,32.9%{opacity:.95}33%,100%{opacity:0}}"
-        "@keyframes blkBoil{0%,100%{transform:translate(0,0) rotate(0)}"
-        "33%{transform:translate(1.4px,-1.1px) rotate(.14deg)}"
-        "66%{transform:translate(-1.1px,.9px) rotate(-.12deg)}}"
+        "@keyframes blkGlM{0%,88%,93%,100%{transform:translate(0,0)}"
+        "89%{transform:translate(2px,0)}91%{transform:translate(-2px,0)}}"
+        "@keyframes blkGh1{0%,88%,93%,100%{opacity:0}"
+        "89%{opacity:.5;transform:translate(6px,0)}"
+        "91%{opacity:.35;transform:translate(-5px,1px)}}"
+        "@keyframes blkGh2{0%,88%,93%,100%{opacity:0}"
+        "89%{opacity:.4;transform:translate(-6px,0)}"
+        "91%{opacity:.3;transform:translate(5px,-1px)}}"
         ".bcrown{animation:blkBob 4.2s ease-in-out infinite}"
-        ".bf{animation:blkFrame 1.05s steps(1,end) infinite}"
-        ".bboil{transform-box:fill-box;transform-origin:center;"
-        "animation:blkBoil .9s steps(1,end) infinite}"
+        ".bglt,.bgh1,.bgh2{transform-box:fill-box;transform-origin:center}"
+        ".bglt{animation:blkGlM 4.6s steps(1,end) infinite}"
+        ".bgh1{animation:blkGh1 4.6s steps(1,end) infinite}"
+        ".bgh2{animation:blkGh2 4.6s steps(1,end) infinite}"
         "@media (prefers-reduced-motion:reduce)"
-        "{.bcrown,.bf,.bboil{animation:none}}"
+        "{.bcrown,.bglt,.bgh1,.bgh2{animation:none}}"
         "</style>"
     )
 
 
-def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6):
+def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6,
+              dur=7.0):
     """
-    The card: organic silhouette filled with paper, and a border that
-    boils. The three sketch passes are three FRAMES of the same line,
-    equal weight, shown one at a time on staggered delays. Reduced motion
-    leaves only the first frame visible (the others rest at opacity 0).
+    The card, alive: one path carries both the paper fill and the ink
+    edge, and its geometry morphs continuously between the three sketch
+    passes of the same line - eased splines, no snapping. Fill and stroke
+    live on one element so they can never drift apart. A second, fainter
+    stroke runs the same cycle a phase ahead, the sketchy double line.
     """
     passes = sketch(w - inset * 2, h - inset * 2, radius, seed, passes=3)
-    shifted = [[(x + inset, y + inset) for x, y in p] for p in passes]
+    d = [svg_path([(x + inset, y + inset) for x, y in p]) for p in passes]
 
-    out = ['<path d="%s" fill="%s"/>' % (svg_path(shifted[0]), paper)]
-    for i, pts in enumerate(shifted):
-        out.append('<path class="bf" style="animation-delay:%.2fs" '
-                   'd="%s" fill="none" stroke="%s" stroke-width="%.1f" '
-                   'stroke-linejoin="round" stroke-linecap="round" '
-                   'opacity="%s"/>'
-                   % (-0.35 * (2 - i) if i else 0.0, svg_path(pts), border,
-                      stroke * 0.85, ".95" if i == 0 else "0"))
-    return "".join(out)
+    def morph(values):
+        n = len(values) - 1
+        return ('<animate attributeName="d" dur="%.1fs" '
+                'repeatCount="indefinite" calcMode="spline" '
+                'keyTimes="%s" keySplines="%s" values="%s"/>'
+                % (dur,
+                   ";".join("%.3f" % (i / n) for i in range(n + 1)),
+                   ";".join([".42 0 .58 1"] * n),
+                   ";".join(values)))
+
+    return (
+        '<path fill="%s" stroke="%s" stroke-width="%.1f" '
+        'stroke-linejoin="round" stroke-linecap="round" opacity="0.97" '
+        'd="%s">%s</path>'
+        '<path fill="none" stroke="%s" stroke-width="%.1f" '
+        'stroke-linejoin="round" stroke-linecap="round" opacity="0.20" '
+        'd="%s">%s</path>'
+        % (paper, border, stroke * 0.9, d[0],
+           morph([d[0], d[1], d[2], d[0]]),
+           border, stroke * 0.55, d[1],
+           morph([d[1], d[2], d[0], d[1]])))
+
+
+def glitch(markup, delay=0.0):
+    """
+    Wrap one <text> element in the misregistration treatment: two ink
+    ghosts that exist only during the burst, then the element itself.
+    Ghosts rest at opacity 0, so reduced motion never sees them.
+    """
+    import re
+
+    ghost = re.sub(r'opacity="[^"]*"', 'opacity="0"', markup, count=1)
+    if 'opacity="0"' not in ghost:
+        ghost = ghost.replace("<text ", '<text opacity="0" ', 1)
+    style = 'style="animation-delay:-%.2fs" ' % delay
+    return (ghost.replace("<text ", '<text class="bgh1" ' + style, 1)
+            + ghost.replace("<text ", '<text class="bgh2" ' + style, 1)
+            + markup.replace("<text ", '<text class="bglt" ' + style, 1))
 
 
 def dust_anim(rng, n, bbox, ink):
@@ -224,9 +263,10 @@ def header(root, theme, tokens, index, title, subtitle, w,
         ('<text x="48" y="78" font-family="%s" font-size="32" '
          'font-weight="900" letter-spacing="2" fill="%s" opacity="0.45">'
          "%s</text>") % (mono, tokens["sub"], esc(index)),
-        ('<text class="bboil" x="118" y="80" font-family="%s" '
-         'font-size="38" font-weight="900" letter-spacing="5" '
-         'fill="%s">%s</text>') % (font, tokens["ink"], esc(title)),
+        glitch(('<text x="118" y="80" font-family="%s" font-size="38" '
+                 'font-weight="900" letter-spacing="5" fill="%s">'
+                 "%s</text>") % (font, tokens["ink"], esc(title)),
+               delay=(sum(map(ord, title)) % 37) / 10.0),
         ('<text x="120" y="116" font-family="%s" font-size="16" '
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.9">'
          "%s</text>") % (mono, tokens["sub"], esc(subtitle)),

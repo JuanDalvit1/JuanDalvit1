@@ -148,7 +148,7 @@ def build(theme):
                     rest = line[len(lead):].lstrip()
                     body.append(text(x, y, lead, 16, t["ink"], 700, 0.5,
                                      MONO, 0.98))
-                    body.append(text(x + (len(lead) + 1) * CHAR_W, y, rest,
+                    body.append(text(x + (len(lead) + 1) * CHAR_W + 4, y, rest,
                                      16, t["sub"], 400, 0.5, MONO, 0.95))
                 else:
                     body.append(text(x, y, line, 16, t["sub"], 400, 0.5,

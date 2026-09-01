@@ -58,9 +58,10 @@ def build(index, title, subtitle, theme, seed):
         ('<text x="48" y="74" font-family="%s" font-size="32" '
          'font-weight="900" letter-spacing="2" fill="%s" opacity="0.45">'
          "%s</text>") % (MONO, t["sub"], esc(index)),
-        ('<text class="bboil" x="118" y="76" font-family="%s" '
-         'font-size="38" font-weight="900" letter-spacing="5" '
-         'fill="%s">%s</text>') % (FONT, t["ink"], esc(title)),
+        blk_style.glitch(
+            ('<text x="118" y="76" font-family="%s" font-size="38" '
+             'font-weight="900" letter-spacing="5" fill="%s">%s</text>')
+            % (FONT, t["ink"], esc(title)), delay=seed % 4),
         ('<text x="120" y="114" font-family="%s" font-size="16" '
          'font-weight="400" letter-spacing="1" fill="%s" opacity="0.85">'
          "%s</text>") % (MONO, t["sub"], esc(subtitle)),

@@ -63,10 +63,8 @@ def build(slug, seed, title, detail, theme):
     out.append(blk_style.draw_card(W, H, RADIUS, seed, t["paper"],
                                    t["border"]))
 
-    title_t = text(36, 56, title, 26, t["ink"], 900, 3)
-    out.append(title_t.replace('<text ', '<text class="bboil" '
-                               'style="animation-delay:-%.2fs" '
-                               % ((seed % 9) / 10.0), 1))
+    out.append(blk_style.glitch(text(36, 56, title, 26, t["ink"], 900, 3),
+                                delay=(seed % 41) / 10.0))
     out.append(text(37, 88, detail, 14, t["sub"], 400, 0.5, MONO, 0.9))
 
     total_h = H + MARGIN_BOTTOM
