@@ -209,7 +209,8 @@ def build_hero(bust_mask):
         tracked(draw, (tx + 2, 404), "FOUNDER @ FLEXIBASE-PROJECTS",
                 font(MONOB, 16), ink, 2)
 
-        save(card(canvas, BORDER[theme], seed=17), "hero-%s.png" % theme)
+        # flat plate: the animated SVG wrapper draws the card around it
+        save(canvas, "hero-%s.png" % theme)
 
 
 def build_arise(arise_mask):
