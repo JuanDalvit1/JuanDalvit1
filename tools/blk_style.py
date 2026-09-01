@@ -164,36 +164,60 @@ def anim_css():
 def draw_card(w, h, radius, seed, paper, border, stroke=3, inset=6,
               dur=7.0):
     """
-    The card, alive: one path carries both the paper fill and the ink
-    edge, and its geometry morphs continuously between the three sketch
-    passes of the same line - eased splines, no snapping. Fill and stroke
-    live on one element so they can never drift apart. A second, fainter
-    stroke runs the same cycle a phase ahead, the sketchy double line.
-    """
-    passes = sketch(w - inset * 2, h - inset * 2, radius, seed, passes=3)
-    d = [svg_path([(x + inset, y + inset) for x, y in p]) for p in passes]
+    The card, alive AND scribbled. Two components per point, treated
+    differently on purpose:
 
-    def morph(values):
-        n = len(values) - 1
-        return ('<animate attributeName="d" dur="%.1fs" '
+      * the GRIT - the high-frequency scratch that makes the line read as
+        hand-drawn - is frozen per layer. It never interpolates, so it can
+        never be averaged away mid-morph (lerping two independent noise
+        fields halves the variance at the midpoint; that is exactly what
+        made the first morph look suddenly clean).
+      * the DRIFT - the slow wander of a hand that cannot hold a line -
+        is what morphs, through four keyframes on eased splines.
+
+    Three layers, like the static border always had, each on its own
+    period, so they slide against each other and the edge shimmers the
+    way an ink sketch does.
+    """
+    import random as _random
+
+    base = rounded_rect(w - inset * 2, h - inset * 2, radius, step=7.5)
+    norms = _normals(base)
+    n = len(base)
+    rng = _random.Random(seed)
+
+    out = []
+    for layer in range(3):
+        grit_amp = 0.55 + 0.30 * layer
+        grit = [rng.gauss(0, grit_amp) for _ in range(n)]
+        amp = 3.4 * (1.0 + 0.35 * layer)
+
+        frames = []
+        for _f in range(4):
+            drift = _drift(n, rng, amp, wavelength=26.0)
+            pts = [(x + nx * (drift[i] + grit[i]) + inset,
+                    y + ny * (drift[i] + grit[i]) + inset)
+                   for i, ((x, y), (nx, ny)) in enumerate(zip(base, norms))]
+            pts.append(pts[0])
+            frames.append(svg_path(pts))
+        values = frames + [frames[0]]
+
+        k = len(values) - 1
+        anim = ('<animate attributeName="d" dur="%.1fs" '
                 'repeatCount="indefinite" calcMode="spline" '
                 'keyTimes="%s" keySplines="%s" values="%s"/>'
-                % (dur,
-                   ";".join("%.3f" % (i / n) for i in range(n + 1)),
-                   ";".join([".42 0 .58 1"] * n),
+                % (dur * (1.0 + 0.45 * layer),
+                   ";".join("%.3f" % (i / k) for i in range(k + 1)),
+                   ";".join([".42 0 .58 1"] * k),
                    ";".join(values)))
 
-    return (
-        '<path fill="%s" stroke="%s" stroke-width="%.1f" '
-        'stroke-linejoin="round" stroke-linecap="round" opacity="0.97" '
-        'd="%s">%s</path>'
-        '<path fill="none" stroke="%s" stroke-width="%.1f" '
-        'stroke-linejoin="round" stroke-linecap="round" opacity="0.20" '
-        'd="%s">%s</path>'
-        % (paper, border, stroke * 0.9, d[0],
-           morph([d[0], d[1], d[2], d[0]]),
-           border, stroke * 0.55, d[1],
-           morph([d[1], d[2], d[0], d[1]])))
+        fill = paper if layer == 0 else "none"
+        out.append('<path fill="%s" stroke="%s" stroke-width="%.1f" '
+                   'stroke-linejoin="round" stroke-linecap="round" '
+                   'opacity="%.2f" d="%s">%s</path>'
+                   % (fill, border, max(1.0, stroke - layer),
+                      0.98 - 0.26 * layer, frames[0], anim))
+    return "".join(out)
 
 
 def glitch(markup, delay=0.0):
